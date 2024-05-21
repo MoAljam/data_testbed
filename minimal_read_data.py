@@ -25,11 +25,24 @@ reader = dv.io.MonoCameraRecording(path_to_file)
 # reading from camera is analogous to reading from file but with dv.io.CameraCapture instead
 
 # Get and print the camera name that data from recorded from
-print(f"data from camera: [{reader.getCameraName()}]")
+
+
+# meta data
+timerange = reader.getTimeRange()
+duration = timerange[1] - timerange[0]
+print(f"metadata of file: {path_to_file}")
+print(f"timerange: {timerange}")
+print(f"duration: {duration}")
+print(f"stream names: {reader.getStreamNames()}")
+print(f"events resulution: {reader.getEventResolution()}")
+print(f"camera name: [{reader.getCameraName()}]")
 
 # Check if event stream is available
 if reader.isEventStreamAvailable():
 
+    print(f"events Metadata {reader.getStreamMetadata('events')}")
+    print(f"events resolution: {reader.getEventResolution()}")
+    
     all_events = []
     while reader.isRunning():
         # Read batch of events
@@ -53,7 +66,7 @@ if reader.isEventStreamAvailable():
     # convert into pandas dataframe
     all_events_df = pd.DataFrame(all_events)
     print(f"all events df shape: {all_events_df.shape}")
-    print(f"all events df sample: {all_events_df.head(2)}")
+    print(f"all events df sample: {all_events_df.head(1)}")
     # save as cvs / mat file if needed
     # ...
 
@@ -61,18 +74,9 @@ if reader.isEventStreamAvailable():
     # get one batch of events
     reader.resetSequentialRead()
 
-    # meta data
-    timerange = reader.getTimeRange()
-    duration = timerange[1] - timerange[0]
-    print(f"timerange: {timerange}")
-    print(f"duration: {duration}")
-    print(f"stream names: {reader.getStreamNames()}")
-    print(f"events resulution: {reader.getEventResolution()}")
-    print(f"events Metadata {reader.getStreamMetadata('events')}")
-
     # get the events within a time range
     packet = reader.getEventsTimeRange(timerange[0], (timerange[0]+timerange[1])//2, "events")
-    print(f"packet type: {type(packet)}, shape: {packet.numpy().shape}")
+    print(f"events packet type: {type(packet)}, shape: {packet.numpy().shape}")
 
     events = reader.getNextEventBatch()
     print(f"type of events storage: {type(events)}")
@@ -82,7 +86,7 @@ if reader.isEventStreamAvailable():
     timestamps = events.timestamps()
     polarities = events.polarities()
 
-    print("get the events-data as seperated numpy arrays from the EventStore object:")
+    print("events-data as seperated numpy arrays from the EventStore object:")
     print(f"number of events: {events.size()}")
     print(f"shape of coordinates(pixels): {coords.shape}, of type: {coords.dtype}")
     print(f"shape of timestamps: {timestamps.shape}, of type: {timestamps.dtype}")
