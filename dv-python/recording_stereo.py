@@ -4,28 +4,37 @@ import select
 import sys
 
 import cv2 as cv
+import datetime
 import dv_processing as dv
+import cv2 as cv
 
 filename = "t.aedat4"
-capture = dv.io.StereoCapture("DVXplorer_DXA00463", "DVXplorer_DXA00462")
+# Open the cameras
+camera = dv.io.StereoCapture("DVXplorer_DXA00462", "DVXplorer_DXA00463")
 
 # Create the writer instance, it will only have a single event output stream.
 writer = dv.io.StereoCameraWriter(filename, capture)
 
-# Initialize visualizer instance which generates event data preview
-visualizer = dv.visualization.EventVisualizer(capture.getEventResolution())
+leftVis = dv.visualization.EventVisualizer(camera.left.getEventResolution())
+rightVis = dv.visualization.EventVisualizer(camera.right.getEventResolution())
 
-# Create the preview window
-cv.namedWindow("Preview", cv.WINDOW_NORMAL)
-
-
-def preview_events(event_slice):
-    cv.imshow("Preview", visualizer.generateImage(event_slice))
-    cv.waitKey(2)
-
+# Create the preview windows
+cv.namedWindow("Left", cv.WINDOW_NORMAL)
+cv.namedWindow("Right", cv.WINDOW_NORMAL)
 
 slicer = dv.StereoEventStreamSlicer()
-slicer.doEveryTimeInterval(datetime.timedelta(milliseconds=33), preview_events)
+
+keepRunning = True
+
+def preview(left, right):
+    cv.imshow("Left", leftVis.generateImage(left))
+    cv.imshow("Right", rightVis.generateImage(right))
+    if cv.waitKey(2) == 27:
+        global keepRunning
+        keepRunning = False
+
+
+slicer.doEveryTimeInterval(datetime.timedelta(milliseconds=33), preview)
 
 while True:
     # non-blocking code to break loop (stop recording) when enter is pressed
@@ -33,8 +42,11 @@ while True:
     if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
         line = input()
         break
-    left_events = capture.left.getNextEventBatch()
-    right_events = capture.right.getNextEventBatch()
+    left_events = camera.left.getNextEventBatch()
+    right_events = camera.right.getNextEventBatch()
+    # if reading fails, just pass an empty event store
+    slicer.accept(left_events or dv.EventStore(),
+                  right_events or dv.EventStore())
     if left_events is not None:
         writer.left.writeEvents(left_events)
     if right_events is not None:
