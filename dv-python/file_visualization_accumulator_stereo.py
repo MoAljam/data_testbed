@@ -5,11 +5,11 @@ from datetime import timedelta
 use_live_feed = False
 filename = "dvSave-2024_05_13_16_57_12.aedat4"
 # Open the recording file
-recording = dv.io.StereoCameraRecording(filename, "DVXplorer_DXA00463",
-                                        "DVXplorer_DXA00462")
+recording = dv.io.StereoCameraRecording(filename, "DVXplorer_DXA00462",
+                                        "DVXplorer_DXA00463")
 
 if use_live_feed:
-    recording = dv.io.StereoCapture("DVXplorer_DXA00463", "DVXplorer_DXA00462")
+    recording = dv.io.StereoCapture("DVXplorer_DXA00462", "DVXplorer_DXA00463")
 
 # Initialize event accumulator with the known resolution
 left_accumulator = dv.Accumulator(
