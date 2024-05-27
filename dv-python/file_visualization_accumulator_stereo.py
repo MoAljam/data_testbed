@@ -3,7 +3,7 @@ import cv2 as cv
 from datetime import timedelta
 
 use_live_feed = False
-filename = "dvSave-2024_05_13_16_57_12.aedat4"
+filename = "t.aedat4"
 # Open the recording file
 recording = dv.io.StereoCameraRecording(filename, "DVXplorer_DXA00462",
                                         "DVXplorer_DXA00463")
@@ -41,10 +41,15 @@ def slicing_callback(left, right):
 
 # Register a callback every 33 milliseconds
 slicer.doEveryTimeInterval(timedelta(milliseconds=33), slicing_callback)
-left_events = recording.getLeftReader().getNextEventBatch()
-right_events = recording.getRightReader().getNextEventBatch()
+reader_left = recording.getLeftReader()
+reader_right = recording.getRightReader()
+
+left_events = reader_left.getNextEventBatch()
+right_events = reader_right.getNextEventBatch()
 # Run the event processing while the camera is connected
 while left_events is not None:
     slicer.accept(left_events, right_events)
-    left_events = recording.getLeftReader().getNextEventBatch()
-    right_events = recording.getRightReader().getNextEventBatch()
+    left_events = reader_left.getNextEventBatch()
+    right_events = reader_right.getNextEventBatch()
+
+cv.destroyAllWindows()

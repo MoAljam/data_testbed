@@ -4,7 +4,7 @@ import dv_processing as dv
 import cv2 as cv
 
 use_live_feed = False
-filename = "dvSave-2024_05_13_16_57_12.aedat4"
+filename = "t.aedat4"
 # Open the recording file
 recording = dv.io.StereoCameraRecording(filename, "DVXplorer_DXA00462",
                                         "DVXplorer_DXA00463")
@@ -24,9 +24,9 @@ cv.namedWindow("Left", cv.WINDOW_NORMAL)
 cv.namedWindow("Right", cv.WINDOW_NORMAL)
 
 
-def preview_events(event_slice):
-    cv.imshow("Left", left_visualizer.generateImage(event_slice))
-    cv.imshow("Right", right_visualizer.generateImage(event_slice))
+def preview_events(event_slice_left, event_slice_right):
+    cv.imshow("Left", left_visualizer.generateImage(event_slice_left))
+    cv.imshow("Right", right_visualizer.generateImage(event_slice_right))
     cv.waitKey(2)
 
 
@@ -34,10 +34,17 @@ def preview_events(event_slice):
 slicer = dv.StereoEventStreamSlicer()
 slicer.doEveryTimeInterval(datetime.timedelta(milliseconds=33), preview_events)
 
-left_events = recording.getLeftReader().getNextEventBatch()
-right_events = recording.getRightReader().getNextEventBatch()
-# Run the event processing while the camera is connected
-while left_events is not None:
+# get the reader instances of both cameras
+reader_left = recording.getLeftReader()
+reader_right = recording.getRightReader()
+
+left_events = reader_left.getNextEventBatch()
+right_events = reader_right.getNextEventBatch()
+# Run the event processing while the camera is connected / events are available
+while left_events is not None and right_events is not None:
     slicer.accept(left_events, right_events)
-    left_events = recording.getLeftReader().getNextEventBatch()
-    right_events = recording.getRightReader().getNextEventBatch()
+    left_events = reader_left.getNextEventBatch()
+    right_events = reader_right.getNextEventBatch()
+
+
+cv.destroyAllWindows()

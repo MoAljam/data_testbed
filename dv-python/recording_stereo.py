@@ -13,7 +13,7 @@ filename = "t.aedat4"
 camera = dv.io.StereoCapture("DVXplorer_DXA00462", "DVXplorer_DXA00463")
 
 # Create the writer instance, it will only have a single event output stream.
-writer = dv.io.StereoCameraWriter(filename, capture)
+writer = dv.io.StereoCameraWriter(filename, camera)
 
 leftVis = dv.visualization.EventVisualizer(camera.left.getEventResolution())
 rightVis = dv.visualization.EventVisualizer(camera.right.getEventResolution())
